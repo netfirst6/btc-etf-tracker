@@ -16,14 +16,10 @@ from bs4 import BeautifulSoup
 
 FARSIDE_URL = "https://farside.co.uk/bitcoin-etf-flow-all-data-table/"
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "flows.csv")
-MAX_ROWS    = 500  # keep last N trading days
+MAX_ROWS    = 500
 
 
 def fetch_flows():
-    """
-    Returns list of dicts sorted oldest → newest:
-      { "date": "YYYY-MM-DD", "NetFlow_MUSD": float }
-    """
     headers = {"User-Agent": "Mozilla/5.0 (compatible; BTCETFTracker/1.0)"}
     resp    = requests.get(FARSIDE_URL, headers=headers, timeout=30)
     resp.raise_for_status()
@@ -51,8 +47,8 @@ def fetch_flows():
         raw_date  = cells[date_idx].get_text(strip=True)
         raw_total = (cells[total_idx].get_text(strip=True)
                      .replace(",", "")
-                     .replace("\u2212", "-")   # unicode minus
-                     .replace("\u2014", "")    # em-dash (blank/holiday)
+                     .replace("\u2212", "-")
+                     .replace("\u2014", "")
                      .strip())
 
         date_str = None
@@ -82,7 +78,6 @@ def write_csv(records):
     with open(OUTPUT_PATH, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["date", "NetFlow_MUSD"])
         writer.writeheader()
-        # Newest first — TradingView request.seed() aligns by date column
         for r in reversed(records):
             writer.writerow(r)
     print(f"✅  Wrote {len(records)} rows to {OUTPUT_PATH}")
