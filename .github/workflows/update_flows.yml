@@ -1,0 +1,42 @@
+name: Update BTC ETF Flows
+
+on:
+  schedule:
+    # 06:00 UTC daily — Farside publishes prior day's data by ~05:00 UTC
+    - cron: "0 6 * * *"
+
+  # Manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  update-flows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Needed to push the CSV commit back to the repo
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4
+
+      - name: Fetch flows & write CSV
+        run: python scripts/fetch_etf_flows.py
+
+      - name: Commit and push updated CSV
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/flows.csv
+          # Only commit if the file actually changed
+          git diff --cached --quiet || git commit -m "chore: update BTC ETF flows $(date -u +'%Y-%m-%d')"
+          git push
