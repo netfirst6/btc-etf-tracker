@@ -1,11 +1,5 @@
 """
 BTC ETF Flow Scraper → flows.csv
----------------------------------
-Scrapes Farside Investors and writes a clean CSV to data/flows.csv.
-GitHub Actions commits and pushes the file daily.
-TradingView reads it via the raw.githubusercontent.com URL.
-
-No external services, no API keys required.
 """
 
 import csv
@@ -18,10 +12,14 @@ FARSIDE_URL = "https://farside.co.uk/bitcoin-etf-flow-all-data-table/"
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "flows.csv")
 MAX_ROWS    = 500
 
-
 def fetch_flows():
-    headers = {"User-Agent": "Mozilla/5.0 (compatible; BTCETFTracker/1.0)"}
-    resp    = requests.get(FARSIDE_URL, headers=headers, timeout=30)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Referer": "https://farside.co.uk/",
+    }
+    resp = requests.get(FARSIDE_URL, headers=headers, timeout=30)
     resp.raise_for_status()
 
     soup  = BeautifulSoup(resp.text, "html.parser")
